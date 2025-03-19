@@ -26,6 +26,8 @@ contract MarketPlace is ERC721 {
         uint256 carId = _carId;
         
         cars[carId] = Car(carId, name, price, msg.sender, true);
+
+        _mint(msg.sender, carId);
         emit CarListed(carId, name, price, msg.sender);
     }
 
@@ -34,10 +36,14 @@ contract MarketPlace is ERC721 {
         require(car.isForSale, "Car is not for sale");
         require(msg.value >= car.price, "Insufficient funds");
 
+        address previousOwner = car.owner;
         car.owner = msg.sender;
         car.isForSale = false;
 
-        _mint(msg.sender, carId);
+        _transfer(previousOwner, msg.sender, carId);
+        
+        (bool success, ) = previousOwner.call{value: msg.value}("");
+        require(success, "Transfer failed");
         emit CarSold(carId, msg.sender);
     }
 

@@ -24,6 +24,9 @@ contract MarketPlaceTest is Test {
         assertEq(car.price, 1 ether);
         assertEq(car.owner, alice);
         assertEq(car.isForSale, true);
+
+        // Verify NFT minted
+        assertEq(marketplace.ownerOf(1), alice);
         vm.stopPrank();
     }
 
@@ -37,9 +40,15 @@ contract MarketPlaceTest is Test {
         marketplace.buyCar{value: 1 ether}(1);
         MarketPlace.Car memory car = marketplace.showCar(1);
 
+        // Verify car ownership is transferred
         assertEq(car.owner, bob);
         assertEq(car.isForSale, false);
-        assertEq(address(marketplace).balance, 1 ether); // Contract should hold the payment
+
+        // Verify NFT is transferred to Bob
+        assertEq(marketplace.ownerOf(1), bob);
+
+        // Verify Alice received the payment
+        assertEq(alice.balance, 1 ether);
         vm.stopPrank();
     } 
 
@@ -74,6 +83,6 @@ contract MarketPlaceTest is Test {
         assertEq(allCars[2].price, 3 ether);
         assertEq(allCars[2].owner, alice);
         assertEq(allCars[2].isForSale, true);
-        
+
     }
 }
